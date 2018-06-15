@@ -107,6 +107,9 @@ USER darling
 # Set our working directory.
 WORKDIR /home/darling
 
+# Setup our volume for bringing apps into container.
+VOLUME /mnt/apps
+
 # Set the entrypoint.
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 

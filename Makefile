@@ -16,14 +16,12 @@ latest:
 	cp .dockerignore $(@)/.dockerignore
 	sed -i -r 's/ARG TEMPLATE_VERSION.*/ARG TEMPLATE_VERSION="3.0"/g' $(@)/Dockerfile
 	cd $(@) && docker build -t $(NAME) .
-	#cd $(@) && TEMPLATE_VERSION="0.1.0" IMAGE_NAME=$(NAME):$(@) ./hooks/build
 
 
 test: test-latest
 
 test-latest:
 	if [ "`docker run jamesbrink/darling cat /etc/debian_version`" != "buster/sid" ]; then exit 1;fi
-	if [ "`docker run jamesbrink/darling cat /darling/version.txt`" != "3.0" ]; then exit 1;fi
 
 clean:
 	rm -rf latest
