@@ -57,34 +57,24 @@ RUN set -xe; \
 RUN set -xe; \
     echo "darling ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers;
 
-# Clone osxcross
+# Clone and build osxcross
 RUN set -xe; \
     git clone https://github.com/tpoechtrager/osxcross.git; \
     cd /osxcross/tarballs; \
-    wget "https://github.com/jamesbrink/osxcross-resources/raw/master/MacOSX10.11.sdk.tar.xz";
-
-# Setup SDK 
-RUN set -xe; \
+    wget "https://github.com/jamesbrink/osxcross-resources/raw/master/MacOSX10.11.sdk.tar.xz"; \
     cd /osxcross; \
     UNATTENDED="true" ./build.sh; \
     UNATTENDED="true" PATH="/osxcross/target/bin:/usr/local/bin:$PATH" MACOSX_DEPLOYMENT_TARGET="10.11" /osxcross/target/bin/osxcross-macports install openssl qt5 db48 boost miniupnpc;
 
-# Clone Darling
+# Build Darling
 RUN set -xe; \
     git clone --recurse-submodules https://github.com/darlinghq/darling.git /home/darling; \
     echo "${WINE_VERSION}" > /home/darling/version.txt; \
-    chown darling:darling /home/darling/version.txt;
-
-# Build Darling
-RUN set -xe; \
     mkdir -p /home/darling/build; \
     cd /home/darling/build; \
     cmake ..; \
-    make install -j"$(nproc)"; \
-    chown -R darling:darling /home/darling;
-
-# TODO replace this
-RUN set -xe; \
+    make -j"$(nproc)"; \
+    make install; \
     rm -rf /usr/src/linux-headers-4.15.0-22*; \
     cd /usr/local/src/; \
     wget "http://mirror.pseudoform.org/core/os/x86_64/linux-headers-4.16.13-2-x86_64.pkg.tar.xz"; \
@@ -93,7 +83,17 @@ RUN set -xe; \
     cp -rv ./usr/lib/modules/4.16.13-2-ARCH/build /usr/local/src/linux-headers-"$(uname -r)"; \
     cd /home/darling/build; \
     make lkm -j"$(nproc)"; \
-    make lkm_install;
+    make lkm_install; \
+    rm -rf /home/darling/build; \
+    chown -R darling:darling /home/darling;
+
+# Download kernel-header scripts
+RUN set -xe; \
+    apt-get update; \
+    apt-get install -y curl; \
+    cd /usr/local; \
+    git clone https://github.com/jamesbrink/kernel-headers.git; \
+    rm -rf /var/lib/apt/lists/*;
 
 # Copy our entrypoint into the container.
 COPY ./docker-assets /
