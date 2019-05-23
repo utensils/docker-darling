@@ -20,6 +20,8 @@ Then to run the actual container you will need to mount your systems kernel sour
 be built at container startup.
 
 ```shell
-$ docker run -i -t -v "$(pwd)/apps":"/mnt/apps" -v /lib/modules/$(uname -r)/build:/lib/modules/$(uname -r)/build:ro --rm --privileged jamesbrink/darling bash
+$ docker run -i -t \
+    -v /lib/modules/$(uname -r)/build:/lib/modules/$(uname -r)/build:ro \
+    --privileged jamesbrink/darling bash
 ```
 

@@ -1,7 +1,7 @@
 # !/usr/bin/make - f
 
 SHELL               := /usr/bin/env bash
-DOCKER_NAMESPACE    ?= jamesbrink/darling
+DOCKER_NAMESPACE    ?= jamesbrink
 DARLING_GIT_REF	    := master
 OSXCROSS_GIT_REF    := master
 VERSION             := $(shell git describe --tags --abbrev=0 2>/dev/null || git rev-parse --abbrev-ref HEAD)

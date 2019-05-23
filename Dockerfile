@@ -89,10 +89,11 @@ RUN set -xe; \
 # Build arguments.
 ARG VCS_REF
 ARG BUILD_DATE
+ARG VERSION
 
 # Labels / Metadata.
 LABEL maintainer="James Brink, brink.james@gmail.com" \
-    org.label-schema.decription="darling" \
+    org.label-schema.decription="darling ($VERSION)" \
     org.label-schema.version="git - $DARLING_GIT_REF" \
     org.label-schema.name="darling" \
     org.label-schema.build-date="$BUILD_DATE" \
