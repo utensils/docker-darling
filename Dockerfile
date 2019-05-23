@@ -1,20 +1,5 @@
 FROM ubuntu:18.04
 
-# Build arguments.
-ARG VCS_REF
-ARG BUILD_DATE
-ARG WINE_VERSION="3.0"
-
-# Labels / Metadata.
-LABEL maintainer="James Brink, brink.james@gmail.com" \
-    decription="darling" \
-    version="3.0" \
-    org.label-schema.name="darling" \
-    org.label-schema.build-date=$BUILD_DATE \
-    org.label-schema.vcs-ref=$VCS_REF \
-    org.label-schema.vcs-url="https://github.com/jamesbrink/docker-template" \
-    org.label-schema.schema-version="1.0.0-rc1"
-
 # Create our group & user.
 RUN set -xe; \
     groupadd -g 1000 darling; \
@@ -32,6 +17,7 @@ RUN set -xe; \
         gcc-multilib \
         git \
         kmod \
+        libbsd-dev \
         libc6-dev:i386 \
         libcairo2-dev \
         libcap2-bin \
@@ -58,8 +44,11 @@ RUN set -xe; \
     echo "darling ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers;
 
 # Clone and build osxcross
+ARG OSXCROSS_GIT_REF="master"
 RUN set -xe; \
     git clone https://github.com/tpoechtrager/osxcross.git; \
+    cd /osxcross; \
+    git checkout ${OSXCROSS_GIT_REF}; \
     cd /osxcross/tarballs; \
     wget "https://github.com/jamesbrink/osxcross-resources/raw/master/MacOSX10.11.sdk.tar.xz"; \
     cd /osxcross; \
@@ -67,36 +56,52 @@ RUN set -xe; \
     UNATTENDED="true" PATH="/osxcross/target/bin:/usr/local/bin:$PATH" MACOSX_DEPLOYMENT_TARGET="10.11" /osxcross/target/bin/osxcross-macports install openssl qt5 db48 boost miniupnpc;
 
 # Build Darling
+ARG DARLING_GIT_REF="master"
 RUN set -xe; \
-    git clone --recurse-submodules https://github.com/darlinghq/darling.git /home/darling; \
-    echo "${WINE_VERSION}" > /home/darling/version.txt; \
+    git clone --recurse-submodules https://github.com/darlinghq/darling.git /home/darling;
+
+# We break this step up for local caching purposes
+RUN set -xe; \
+    echo "${DARLING_GIT_REF}" > /home/darling/version.txt; \
+    cd /home/darling; \
+    git checkout ${DARLING_GIT_REF}; \
     mkdir -p /home/darling/build; \
     cd /home/darling/build; \
     cmake ..; \
     make -j"$(nproc)"; \
     make install; \
-    rm -rf /usr/src/linux-headers-4.15.0-22*; \
-    cd /usr/local/src/; \
-    wget "http://mirror.pseudoform.org/core/os/x86_64/linux-headers-4.16.13-2-x86_64.pkg.tar.xz"; \
-    tar xfv linux-headers-4.16.13-2-x86_64.pkg.tar.xz; \
-    cp -rv ./usr/lib/* /lib/; \
-    cp -rv ./usr/lib/modules/4.16.13-2-ARCH/build /usr/local/src/linux-headers-"$(uname -r)"; \
-    cd /home/darling/build; \
-    make lkm -j"$(nproc)"; \
-    make lkm_install; \
+    cp /home/darling/build/src/startup/rtsig.h /home/darling/rtsig.h ;\
+    rm -rf /usr/src/linux-*; \
     rm -rf /home/darling/build; \
+    mkdir -p /home/darling/build/src/startup; \
+    mv /home/darling/rtsig.h /home/darling/src/startup/rtsig.h; \
     chown -R darling:darling /home/darling;
 
 # Download kernel-header scripts
 RUN set -xe; \
+    ls ; \
     apt-get update; \
     apt-get install -y curl; \
     cd /usr/local; \
     git clone https://github.com/jamesbrink/kernel-headers.git; \
     rm -rf /var/lib/apt/lists/*;
 
+# Build arguments.
+ARG VCS_REF
+ARG BUILD_DATE
+
+# Labels / Metadata.
+LABEL maintainer="James Brink, brink.james@gmail.com" \
+    org.label-schema.decription="darling" \
+    org.label-schema.version="git - $DARLING_GIT_REF" \
+    org.label-schema.name="darling" \
+    org.label-schema.build-date="$BUILD_DATE" \
+    org.label-schema.vcs-ref="$VCS_REF" \
+    org.label-schema.vcs-url="https://github.com/jamesbrink/docker-darling.git" \
+    org.label-schema.schema-version="1.0.0-rc1"
+
 # Copy our entrypoint into the container.
-COPY ./docker-assets /
+COPY ./runtime-assets /
 
 # Setup our environment variables.
 ENV PATH="/usr/local/bin:$PATH"
@@ -109,6 +114,8 @@ WORKDIR /home/darling
 
 # Setup our volume for bringing apps into container.
 VOLUME /mnt/apps
+
+# COPY Xcode.dmg /home/darling/Xcode.dmg
 
 # Set the entrypoint.
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

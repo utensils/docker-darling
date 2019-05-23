@@ -1,27 +1,28 @@
-#!/usr/bin/make -f
+# !/usr/bin/make - f
 
-NAME=jamesbrink/darling
-TEMPLATE=Dockerfile.template
-DOCKER_COMPOSE_TEMPLATE=docker-compose.template
-.PHONY: test all clean latest
-.DEFAULT_GOAL := latest
+SHELL					:= /usr/bin/env bash
+DOCKER_NAMESPACE		?= jamesbrink/darling
+DARLING_GIT_REF			:= master
+OSXCROSS_GIT_REF		:= master
+VERSION					:= $(shell git describe --tags --abbrev=0 2>/dev/null || git rev-parse --abbrev-ref HEAD)
+VCS_REF					:= $(shell git rev-parse --short HEAD)
+BUILD_DATE				:= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-all: latest
+.PHONY: default
+default: build
 
-latest:
-	mkdir -p $(@)
-	cp -rp docker-assets $(@)
-	cp -rp hooks $(@)
-	cp Dockerfile.template $(@)/Dockerfile
-	cp .dockerignore $(@)/.dockerignore
-	sed -i -r 's/ARG TEMPLATE_VERSION.*/ARG TEMPLATE_VERSION="3.0"/g' $(@)/Dockerfile
-	cd $(@) && docker build -t $(NAME) .
+# build the docker image
+.PHONY: build test
+build: 
+	docker build \
+		--build-arg BUILD_DATE=$(BUILD_DATE) \
+		--build-arg VCS_REF=$(VCS_REF) \
+		--build-arg VERSION=$(VERSION) \
+		--tag $(DOCKER_NAMESPACE)/darling:latest \
+		--tag $(DOCKER_NAMESPACE)/darling:$(VERSION) \
+		--tag $(DOCKER_NAMESPACE)/darling:$(VCS_REF) \
+		--file Dockerfile .
 
-
-test: test-latest
-
-test-latest:
-	if [ "`docker run jamesbrink/darling cat /etc/debian_version`" != "buster/sid" ]; then exit 1;fi
-
-clean:
-	rm -rf latest
+.PHONY: test
+test:
+	if [ "`docker run $(DOCKER_NAMESPACE)/darling cat /etc/debian_version`" != "buster/sid" ]; then exit 1;fi
