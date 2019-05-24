@@ -60,12 +60,17 @@ ARG DARLING_GIT_REF="master"
 RUN set -xe; \
     git clone --recurse-submodules https://github.com/darlinghq/darling.git /home/darling;
 
+# Include path for linux 5.1
+COPY --chown=darling:darling ./linux-5.1.patch /home/darling/src/lkm
+
 # We break this step up for local caching purposes
 RUN set -xe; \
     echo "${DARLING_GIT_REF}" > /home/darling/version.txt; \
     cd /home/darling; \
     git checkout ${DARLING_GIT_REF}; \
     mkdir -p /home/darling/build; \
+    cd /home/darling/src/lkm; \
+    patch -p1 < linux-5.1.patch; \
     cd /home/darling/build; \
     cmake ..; \
     make -j"$(nproc)"; \
