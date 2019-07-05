@@ -28,6 +28,7 @@ RUN set -xe; \
         libfreetype6-dev:i386 \
         libfuse-dev \
         libgl1-mesa-dev \
+        libssl-dev \
         libtiff5-dev \
         libudev-dev \
         libxml2-dev \
@@ -56,15 +57,16 @@ RUN set -xe; \
     UNATTENDED="true" PATH="/osxcross/target/bin:/usr/local/bin:$PATH" MACOSX_DEPLOYMENT_TARGET="10.11" /osxcross/target/bin/osxcross-macports install openssl qt5 db48 boost miniupnpc;
 
 # Build Darling
-ARG DARLING_GIT_REF="master"
 RUN set -xe; \
     git clone --recurse-submodules https://github.com/darlinghq/darling.git /home/darling;
 
 # We break this step up for local caching purposes
+ARG DARLING_GIT_REF="master"
 RUN set -xe; \
     echo "${DARLING_GIT_REF}" > /home/darling/version.txt; \
     cd /home/darling; \
     git checkout ${DARLING_GIT_REF}; \
+    git submodule update --recursive; \
     mkdir -p /home/darling/build; \
     cd /home/darling/build; \
     cmake ..; \
@@ -78,6 +80,7 @@ RUN set -xe; \
     chown -R darling:darling /home/darling;
 
 # Download kernel-header scripts
+# TODO find a better solution for this
 RUN set -xe; \
     ls ; \
     apt-get update; \
@@ -93,13 +96,14 @@ ARG VERSION
 
 # Labels / Metadata.
 LABEL maintainer="James Brink, brink.james@gmail.com" \
-    org.label-schema.decription="darling ($VERSION)" \
-    org.label-schema.version="git - $DARLING_GIT_REF" \
-    org.label-schema.name="darling" \
     org.label-schema.build-date="$BUILD_DATE" \
+    org.label-schema.decription="darling ($VERSION)" \
+    org.label-schema.name="darling" \
+    org.label-schema.schema-version="1.0.0-rc1" \
     org.label-schema.vcs-ref="$VCS_REF" \
-    org.label-schema.vcs-url="https://github.com/jamesbrink/docker-darling.git" \
-    org.label-schema.schema-version="1.0.0-rc1"
+    org.label-schema.vcs-url="https://github.com/utensils/docker-darling.git" \
+    org.label-schema.vendor="Utensils" \
+    org.label-schema.version="git - $DARLING_GIT_REF"
 
 # Copy our entrypoint into the container.
 COPY ./runtime-assets /

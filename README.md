@@ -1,6 +1,6 @@
 # Docker darling
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/jamesbrink/darling.svg)](https://hub.docker.com/r/jamesbrink/darling/) [![Docker Stars](https://img.shields.io/docker/stars/jamesbrink/darling.svg)](https://hub.docker.com/r/jamesbrink/darling/) [![](https://images.microbadger.com/badges/image/jamesbrink/darling.svg)](https://microbadger.com/images/jamesbrink/darling "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/jamesbrink/darling.svg)](https://microbadger.com/images/jamesbrink/darling "Get your own version badge on microbadger.com")  
+[![Docker Pulls](https://img.shields.io/docker/pulls/utensils/darling.svg)](https://hub.docker.com/r/utensils/darling/) [![Docker Stars](https://img.shields.io/docker/stars/utensils/darling.svg)](https://hub.docker.com/r/utensils/darling/) [![](https://images.microbadger.com/badges/image/utensils/darling.svg)](https://microbadger.com/images/utensils/darling "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/utensils/darling.svg)](https://microbadger.com/images/utensils/darling "Get your own version badge on microbadger.com")  
 
 ## About
 
@@ -22,6 +22,6 @@ be built at container startup.
 ```shell
 $ docker run -i -t \
     -v /lib/modules/$(uname -r)/build:/lib/modules/$(uname -r)/build:ro \
-    --privileged jamesbrink/darling bash
+    --privileged utensils/darling
 ```
 

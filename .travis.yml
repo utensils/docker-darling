@@ -1,7 +1,0 @@
-language: bash
-services: docker
-
-script:
-  - bash -c "make"
-  - docker images
-  - bash -c "make test"
