@@ -28,3 +28,7 @@ build:
 .PHONY: test
 test:
 	if [ "`docker run --entrypoint=/bin/cat $(DOCKER_NAMESPACE)/darling /etc/debian_version`" != "buster/sid" ]; then exit 1;fi
+
+.PHONY: push
+push:
+	docker push $(DOCKER_NAMESPACE)/darling:latest
