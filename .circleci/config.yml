@@ -16,7 +16,7 @@ jobs:
       - run:
           name: Build Docker Images
           command: |
-            make all
+            make
       - run:
           name: List Docker Images
           command: |
