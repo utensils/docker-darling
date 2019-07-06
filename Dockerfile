@@ -70,7 +70,7 @@ RUN set -xe; \
     mkdir -p /home/darling/build; \
     cd /home/darling/build; \
     cmake ..; \
-    make -j"$(nproc)"; \
+    make -j$(getconf _NPROCESSORS_ONLN); \
     make install; \
     cp /home/darling/build/src/startup/rtsig.h /home/darling/rtsig.h ;\
     rm -rf /usr/src/linux-*; \
