@@ -4,20 +4,33 @@
 
 ## About
 
-This is a containerized version of darling (macOS translation layer). This is an experiemental project with the goal to eventually cross compile both iOS and macOS projects in a docker container.
+This is a containerized version of Darling (macOS translation layer). This is an experimental project with the goal to eventually cross compile both iOS and macOS projects in a docker container. I have had some limited success with macOS application builds.
 
-## Usage
+Darling actually uses it's own container system, so running with Docker is a bit redundant, but I would be interested to see it work more gracefully with docker in the future.
 
-Ensure you have kernel sources installed on your host, this is needed to build the darling 
-kernel module against the running system. We run the container in privileged mode and inject the module into the host`s kernel. 
+## Building
 
-To build the docker image run  
+This image is fairly heavy to build and can take a few hours depending on your system. The resulting image is about **10GB** uncompressed.
+The build is driven by a `Makefile` so simply run the following:
 ```shell
 make
 ```
 
-Then to run the actual container you will need to mount your systems kernel sources (read only) into the container so the darling module can
-be built at container startup.
+If you look at the Makefile you will see a variable for `DARLING_GIT_REF` which is used to build the image against a known working git ref since there seems to be no versioning or tagging going on with Darling. This variable is nothing more than a build arg passed to docker so you can build the most recent commit:
+```shell
+DARLING_GIT_REF=master make
+```
+or you can build from a specific commit:
+```shell
+DARLING_GIT_REF=ab56f3209d75ad67a140e1f3e6baccfdca7a1c78 make
+```
+
+## Usage
+
+Ensure you have kernel sources installed on your host, this is needed to build the darling 
+kernel module against the running system on container startup. We run the container in **privileged** mode and inject the module into the host`s kernel. 
+
+We use a volume mount of your host systems kernel sources (read only) so the kernel module can be built on container startup, this is just an attempt to keep the image somewhat portable. The following works on Arch Linux, but some work might need to be done for other Linux distros.  
 
 ```shell
 $ docker run -i -t \
