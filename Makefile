@@ -31,4 +31,4 @@ test:
 
 .PHONY: push
 push:
-	docker push $(DOCKER_NAMESPACE)/darling:latest
+	docker push $(DOCKER_NAMESPACE)/darling
