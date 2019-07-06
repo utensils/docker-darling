@@ -30,11 +30,19 @@ DARLING_GIT_REF=ab56f3209d75ad67a140e1f3e6baccfdca7a1c78 make
 Ensure you have kernel sources installed on your host, this is needed to build the darling 
 kernel module against the running system on container startup. We run the container in **privileged** mode and inject the module into the host`s kernel. 
 
-We use a volume mount of your host systems kernel sources (read only) so the kernel module can be built on container startup, this is just an attempt to keep the image somewhat portable. The following works on Arch Linux, but some work might need to be done for other Linux distros.  
+We use a volume mount of your host systems kernel sources (read only) so the kernel module can be built on container startup, this is just an attempt to keep the image somewhat portable.
 
+
+For Arch Linux Hosts run:
 ```shell
-$ docker run -i -t \
+docker run -i -t \
     -v /lib/modules/$(uname -r)/build:/lib/modules/$(uname -r)/build:ro \
-    --privileged utensils/darling
+    --privileged utensils/darling darling shell
 ```
 
+For Ubuntu/Debian Hosts run: 
+```shell
+docker run -i -t \
+    -v /usr/src:/usr/src:ro \
+    --privileged utensils/darling darling shell
+```

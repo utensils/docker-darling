@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# Setup kernel module paths
+sudo mkdir -p /lib/modules/$(uname -r)
+sudo ln -s /usr/src/linux-headers-$(uname -r) /lib/modules/$(uname -r)/build
+
 # Build kernel module
 mkdir -p /home/darling/build
 cd /home/darling/build
