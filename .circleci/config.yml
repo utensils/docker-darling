@@ -14,9 +14,13 @@ jobs:
               make \
               git
       - run:
+          name: Pull Existing Image for Cache
+          command: |
+            docker pull utensils/darling
+      - run:
           name: Build Docker Images
           command: |
-            make
+            make cached-build
       - run:
           name: List Docker Images
           command: |

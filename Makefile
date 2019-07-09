@@ -25,6 +25,21 @@ build:
 		--tag $(DOCKER_NAMESPACE)/darling:$(VCS_REF) \
 		--file Dockerfile .
 
+# build the docker image using cache
+.PHONY: cached-build test
+cached-build: 
+	docker build \
+		--build-arg BUILD_DATE=$(BUILD_DATE) \
+		--build-arg DARLING_GIT_REF=$(DARLING_GIT_REF) \
+		--build-arg OSXCROSS_GIT_REF=$(OSXCROSS_GIT_REF) \
+		--build-arg VCS_REF=$(VCS_REF) \
+		--build-arg VERSION=$(VERSION) \
+		--tag $(DOCKER_NAMESPACE)/darling:latest \
+		--tag $(DOCKER_NAMESPACE)/darling:$(VERSION) \
+		--tag $(DOCKER_NAMESPACE)/darling:$(VCS_REF) \
+		--cache-from $(DOCKER_NAMESPACE)/darling:latest \
+		--file Dockerfile .
+
 .PHONY: test
 test:
 	if [ "`docker run --entrypoint=/bin/cat $(DOCKER_NAMESPACE)/darling /etc/debian_version`" != "buster/sid" ]; then exit 1;fi

@@ -6,7 +6,9 @@
 
 This is a containerized version of Darling (macOS translation layer). This is an experimental project with the goal to eventually cross compile both iOS and macOS projects in a docker container. I have had some limited success with macOS application builds.
 
-Darling actually uses it's own container system, so running with Docker is a bit redundant, but I would be interested to see it work more gracefully with docker in the future.
+Darling actually uses it's own container system, so running with Docker is a bit redundant, but I would be interested to see it work more gracefully with docker in the future.  
+
+**Pull Requests are always welcome!**
 
 ## Building
 
@@ -46,3 +48,8 @@ docker run -i -t \
     -v /usr/src:/usr/src:ro \
     --privileged utensils/darling darling shell
 ```
+
+## License
+
+This docker build project is licensed [MIT](LICENSE).  
+Darling is GNU v3, other included assets all have their own licensing.
