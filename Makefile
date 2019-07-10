@@ -25,6 +25,20 @@ build:
 		--tag $(DOCKER_NAMESPACE)/darling:$(VCS_REF) \
 		--file Dockerfile .
 
+
+# build the docker image
+.PHONY: build-lite test
+build-lite: 
+	docker build \
+		--build-arg BUILD_DATE=$(BUILD_DATE) \
+		--build-arg DARLING_GIT_REF=$(DARLING_GIT_REF) \
+		--build-arg VCS_REF=$(VCS_REF) \
+		--build-arg VERSION=$(VERSION) \
+		--tag $(DOCKER_NAMESPACE)/darling:lite \
+		--tag $(DOCKER_NAMESPACE)/darling:lite-$(VERSION) \
+		--tag $(DOCKER_NAMESPACE)/darling:lite-$(VCS_REF) \
+		--file Dockerfile.lite .
+
 # build the docker image using cache
 .PHONY: cached-build test
 cached-build: 

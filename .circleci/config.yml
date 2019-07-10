@@ -18,9 +18,13 @@ jobs:
           command: |
             docker pull utensils/darling
       - run:
-          name: Build Docker Images
+          name: Build Docker Image
           command: |
             make cached-build
+      - run:
+          name: Build Lite version
+          command: |
+            make build-lite
       - run:
           name: List Docker Images
           command: |

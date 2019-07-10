@@ -34,7 +34,6 @@ kernel module against the running system on container startup. We run the contai
 
 We use a volume mount of your host systems kernel sources (read only) so the kernel module can be built on container startup, this is just an attempt to keep the image somewhat portable.
 
-
 For Arch Linux Hosts run:
 ```shell
 docker run -i -t \
@@ -47,6 +46,22 @@ For Ubuntu/Debian Hosts run:
 docker run -i -t \
     -v /usr/src:/usr/src:ro \
     --privileged utensils/darling darling shell
+```
+
+### Lite version
+
+I have added a newer much more light weight docker image called `utensils/darling:lite`. 
+This image will likely replace the existing bloated image in the near future. 
+**This image will require you to already have the Darling kernel on your host.**
+
+ArchLinux users can install the AUR package `darling-dkms`:
+```shell
+yay -S darling-dkms
+```
+
+The container can then be run like so:
+```shell
+docker run -i -t --rm --privileged utensils/darling:lite
 ```
 
 ## License
