@@ -12,7 +12,7 @@ BUILD_DATE          := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 default: build
 
 # build the docker image
-.PHONY: build test
+.PHONY: build
 build: 
 	docker build \
 		--build-arg BUILD_DATE=$(BUILD_DATE) \
@@ -27,7 +27,7 @@ build:
 
 
 # build the lite docker image
-.PHONY: build-lite test
+.PHONY: build-lite
 build-lite: 
 	docker build \
 		--build-arg BUILD_DATE=$(BUILD_DATE) \
@@ -39,9 +39,25 @@ build-lite:
 		--tag $(DOCKER_NAMESPACE)/darling:lite-$(VCS_REF) \
 		--file Dockerfile.lite .
 
+# build the lite-builder docker image which can be used for cached 
+# Builds later on
+.PHONY: lite-builder
+lite-builder: 
+	docker build \
+		--build-arg BUILD_DATE=$(BUILD_DATE) \
+		--build-arg DARLING_GIT_REF=$(DARLING_GIT_REF) \
+		--build-arg VCS_REF=$(VCS_REF) \
+		--build-arg VERSION=$(VERSION) \
+		--tag $(DOCKER_NAMESPACE)/darling:lite-builder \
+		--tag $(DOCKER_NAMESPACE)/darling:lite-builder-$(VERSION) \
+		--tag $(DOCKER_NAMESPACE)/darling:lite-builder-$(VCS_REF) \
+		--cache-from $(DOCKER_NAMESPACE)/darling:lite-builder \
+		--target builder \
+		--file Dockerfile.lite .
+
 # build the lite docker image using cache
-.PHONY: cached-build-lite test
-cached-build-lite: 
+.PHONY: cached-build-lite
+cached-build-lite: lite-builder 
 	docker build \
 		--build-arg BUILD_DATE=$(BUILD_DATE) \
 		--build-arg DARLING_GIT_REF=$(DARLING_GIT_REF) \
@@ -50,11 +66,11 @@ cached-build-lite:
 		--tag $(DOCKER_NAMESPACE)/darling:lite \
 		--tag $(DOCKER_NAMESPACE)/darling:lite-$(VERSION) \
 		--tag $(DOCKER_NAMESPACE)/darling:lite-$(VCS_REF) \
-		--cache-from $(DOCKER_NAMESPACE)/darling:lite \
+		--cache-from $(DOCKER_NAMESPACE)/darling:lite-builder \
 		--file Dockerfile.lite .
 
 # build the docker image using cache
-.PHONY: cached-build test
+.PHONY: cached-build
 cached-build: 
 	docker build \
 		--build-arg BUILD_DATE=$(BUILD_DATE) \
