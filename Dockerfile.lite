@@ -79,7 +79,8 @@ RUN set -xe; \
     dpkg --add-architecture i386; \
     apt-get update; \
     apt-get install -y \
-        sudo;
+        sudo; \
+    rm -rf /var/lib/apt/lists/*;
 
 # Setup sudo access
 RUN set -xe; \

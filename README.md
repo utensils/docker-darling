@@ -54,9 +54,14 @@ I have added a newer much more light weight docker image called `utensils/darlin
 This image will likely replace the existing bloated image in the near future. 
 **This image will require you to already have the Darling kernel on your host.**
 
-ArchLinux users can install the AUR package `darling-dkms`:
+ArchLinux users can install the AUR package `darling-mach-dkms`:
 ```shell
-yay -S darling-dkms
+yay -S darling-mach-dkms
+```
+
+Load the kernel module on the host
+```shell
+sudo modprobe darling-mach
 ```
 
 The container can then be run like so:
