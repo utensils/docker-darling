@@ -24,7 +24,7 @@ jobs:
       - run:
           name: Build Lite version
           command: |
-            make build-lite
+            make cached-build-lite
       - run:
           name: List Docker Images
           command: |
