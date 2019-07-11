@@ -17,6 +17,7 @@ jobs:
           name: Pull Existing Images for Cache
           command: |
             docker pull utensils/darling
+            docker pull utensils/darling:lite-builder
       - run:
           name: Build Docker Image
           command: |
