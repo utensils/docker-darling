@@ -66,7 +66,7 @@ Then you can build just the kernel module like so:
 ```shell
 git clone --recursive https://github.com/darlinghq/darling.git
 cd darling
-git checkout ab56f3209d75ad67a140e1f3e6baccfdca7a1c78
+git checkout 4b120631eaebdadf7b77a4bf5c4eeecfe2ea594b
 git submodule update
 mkdir -p build
 cd build

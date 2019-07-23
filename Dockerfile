@@ -95,15 +95,15 @@ ARG BUILD_DATE
 ARG VERSION
 
 # Labels / Metadata.
-LABEL maintainer="James Brink, brink.james@gmail.com" \
-    org.label-schema.build-date="$BUILD_DATE" \
-    org.label-schema.decription="darling ($VERSION)" \
-    org.label-schema.name="darling" \
-    org.label-schema.schema-version="1.0.0-rc1" \
-    org.label-schema.vcs-ref="$VCS_REF" \
-    org.label-schema.vcs-url="https://github.com/utensils/docker-darling.git" \
-    org.label-schema.vendor="Utensils" \
-    org.label-schema.version="git - $DARLING_GIT_REF"
+LABEL \
+    org.opencontainers.image.authors="James Brink <brink.james@gmail.com>" \
+    org.opencontainers.image.created="${BUILD_DATE}" \
+    org.opencontainers.image.description="darling ($VERSION)" \
+    org.opencontainers.image.revision="${VCS_REF}" \
+    org.opencontainers.image.source="https://github.com/utensils/docker-darling.git" \
+    org.opencontainers.image.title="darling" \
+    org.opencontainers.image.vendor="Utensils" \
+    org.opencontainers.image.version="git - ${DARLING_GIT_REF}"
 
 # Copy our entrypoint into the container.
 COPY ./runtime-assets /

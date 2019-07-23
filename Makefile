@@ -2,7 +2,7 @@
 
 SHELL               := /usr/bin/env bash
 DOCKER_NAMESPACE    ?= utensils
-DARLING_GIT_REF	    ?= ab56f3209d75ad67a140e1f3e6baccfdca7a1c78
+DARLING_GIT_REF	    ?= 4b120631eaebdadf7b77a4bf5c4eeecfe2ea594b
 OSXCROSS_GIT_REF    ?= master
 VERSION             := $(shell git describe --tags --abbrev=0 2>/dev/null || git rev-parse --abbrev-ref HEAD)
 VCS_REF             := $(shell git rev-parse --short HEAD)
