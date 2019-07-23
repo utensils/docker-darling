@@ -57,11 +57,11 @@ RUN set -xe; \
     UNATTENDED="true" PATH="/osxcross/target/bin:/usr/local/bin:$PATH" MACOSX_DEPLOYMENT_TARGET="10.11" /osxcross/target/bin/osxcross-macports install openssl qt5 db48 boost miniupnpc;
 
 # Build Darling
+ARG DARLING_GIT_REF="master"
 RUN set -xe; \
     git clone --recurse-submodules https://github.com/darlinghq/darling.git /home/darling;
 
 # We break this step up for local caching purposes
-ARG DARLING_GIT_REF="master"
 RUN set -xe; \
     echo "${DARLING_GIT_REF}" > /home/darling/version.txt; \
     cd /home/darling; \
