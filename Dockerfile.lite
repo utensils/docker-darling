@@ -33,6 +33,7 @@ RUN set -xe; \
     rm -rf /var/lib/apt/lists/*;
 
 # Clone Darling
+ARG DARLING_GIT_REF="master"
 RUN set -xe; \
     mkdir -p /src; \
     git clone --recurse-submodules https://github.com/darlinghq/darling.git /src/darling;
@@ -40,7 +41,6 @@ RUN set -xe; \
 WORKDIR /src/darling
 
 # Checkout working gitref
-ARG DARLING_GIT_REF="master"
 RUN set -xe; \
     git checkout ${DARLING_GIT_REF}; \
     git submodule update --recursive; \
