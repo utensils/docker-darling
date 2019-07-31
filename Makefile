@@ -25,9 +25,8 @@ build:
 		--build-arg VCS_REF=$(VCS_REF) \
 		--build-arg VERSION=$(VERSION) \
 		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME)-builder:latest \
-		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME)-builder:$(VCS_REF) \
-		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME)-builder:$(VERSION) \
 		--target builder \
+		--cache-from $(REPO_NAMESPACE)/$(IMAGE_NAME)-builder:latest \
 		--file Dockerfile .
 	docker build \
 		--build-arg BASE_IMAGE=$(BASE_IMAGE) \
@@ -38,12 +37,14 @@ build:
 		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME):latest \
 		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME):$(VCS_REF) \
 		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME):$(VERSION) \
+		--cache-from $(REPO_NAMESPACE)/$(IMAGE_NAME):latest \
 		--file Dockerfile .
 
 # List built images
 .PHONY: list
 list:
 	docker images $(REPO_NAMESPACE)/$(IMAGE_NAME) --filter "dangling=false"
+	docker images $(REPO_NAMESPACE)/$(IMAGE_NAME)-builder --filter "dangling=false"
 
 # Run any tests
 .PHONY: test
@@ -56,7 +57,8 @@ push:
 	echo "$$REPO_PASSWORD" | docker login -u "$(REPO_USERNAME)" --password-stdin; \
 		docker push  $(REPO_NAMESPACE)/$(IMAGE_NAME):latest; \
 		docker push  $(REPO_NAMESPACE)/$(IMAGE_NAME):$(VCS_REF); \
-		docker push  $(REPO_NAMESPACE)/$(IMAGE_NAME):$(VERSION);
+		docker push  $(REPO_NAMESPACE)/$(IMAGE_NAME):$(VERSION); \
+		docker push  $(REPO_NAMESPACE)/$(IMAGE_NAME)-builder:latest;
 
 # Update README on registry
 .PHONY: push-readme
@@ -72,7 +74,13 @@ push-readme:
 			echo "Success"; \
 		fi;
 
+# Trigger update of micro-badge
+.PHONY: update-micro-badge
+update-micro-badge:
+	curl -d 'update' "https://hooks.microbadger.com/images/$(REPO_NAMESPACE)/$(IMAGE_NAME)/$$MICROBADGER_TOKEN"
+
 # Remove existing images
 .PHONY: clean
 clean:
 	docker rmi $$(docker images $(REPO_NAMESPACE)/$(IMAGE_NAME) --format="{{.Repository}}:{{.Tag}}") --force
+	docker rmi $$(docker images $(REPO_NAMESPACE)/$(IMAGE_NAME)-builder --format="{{.Repository}}:{{.Tag}}") --force

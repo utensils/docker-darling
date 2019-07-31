@@ -28,3 +28,7 @@ jobs:
           command: |
             make push
             make push-readme
+      - run:
+          name: Update MicroBadger
+          command: |
+            make update-micro-badge
