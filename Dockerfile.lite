@@ -51,7 +51,7 @@ WORKDIR /src/darling/build
 
 # Configure Darling Build
 RUN set -xe; \
-    cmake ..;
+    cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/local ..;
 
 # Build Darling
 RUN set -xe; \
@@ -61,10 +61,15 @@ RUN set -xe; \
 RUN set -xe; \
     make install; \
     cp /src/darling/build/src/startup/rtsig.h /src/darling/rtsig.h ;\
-    rm -rf /usr/src/linux-*; \
-    rm -rf /src/darling/build; \
     mkdir -p /src/darling/build/src/startup; \
     mv /src/darling/rtsig.h /src/darling/src/startup/rtsig.h;
+
+# Clean up the source directories
+RUN set -xe; \
+    make clean; \
+    cd /; \
+    rm -rf /src/darling/build/src; \
+    find /src -name '.git' -prune -exec rm -rf {} \\ \;;
 
 # Create fresh image from Ubuntu
 FROM ubuntu:18.04
@@ -79,6 +84,11 @@ RUN set -xe; \
     dpkg --add-architecture i386; \
     apt-get update; \
     apt-get install -y \
+        bison \
+        clang \
+        cmake \
+        flex \
+        make \
         sudo; \
     rm -rf /var/lib/apt/lists/*;
 
@@ -88,6 +98,9 @@ RUN set -xe; \
 
 # Copy our Darling build from previous stage
 COPY --from=builder /usr/local /usr/local
+
+COPY --from=builder /src/darling/ /src/darling/
+# COPY --from=builder /src/darling/build/src/lkm /src/darling/build/src/lkm
 
 ARG VCS_REF
 ARG BUILD_DATE
