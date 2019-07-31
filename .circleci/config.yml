@@ -11,27 +11,19 @@ jobs:
           command: |
             apk add --no-cache \
               bash \
-              make \
-              git
+              git \
+              jq \
+              make
       - run:
-          name: Pull Existing Images for Cache
+          name: Build images
           command: |
-            docker pull utensils/darling
-            docker pull utensils/darling:lite-builder
-      - run:
-          name: Build Docker Image
-          command: |
-            make cached-build
-      - run:
-          name: Build Lite version
-          command: |
-            make cached-build-lite
+            make 
       - run:
           name: List Docker Images
           command: |
-            docker images --filter "label=org.label-schema.vendor=Utensils" --filter "dangling=false"
+            make list
       - run:
           name: Push Docker Images
           command: |
-            echo "$DOCKERHUB_PASS" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
-            make push
+            REPO_PASSWORD="$DOCKERHUB_PASS" make push
+            REPO_PASSWORD="$DOCKERHUB_PASS" make push-readme

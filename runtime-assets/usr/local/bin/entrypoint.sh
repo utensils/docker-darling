@@ -1,23 +1,20 @@
 #!/bin/sh
 
 # Setup kernel module paths
-sudo mkdir -p /lib/modules/$(uname -r)
-sudo ln -s /usr/src/linux-headers-$(uname -r) /lib/modules/$(uname -r)/build
+sudo mkdir -p /lib/modules/"$(uname -r)"
+# sudo ln -s /usr/usr/local/src/linux-headers-"$(uname -r)" /lib/modules/"$(uname -r)"/build
 
 # Build kernel module
-mkdir -p /home/darling/build
-cd /home/darling/build
-cmake ..
-cp /home/darling/src/startup/rtsig.h /home/darling/build/src/startup/
+cd /usr/local/src/darling/build || exit 1
 sudo make lkm -j"$(nproc)"
 sudo make lkm_install
-sudo xz -d /lib/modules/$(uname -r)/extra/darling-mach.ko.xz
+sudo xz -d /lib/modules/"$(uname -r)"/extra/darling-mach.ko.xz
 
 # Try to unload any existing darling modules
 sudo rmmod darling-mach.ko
 
 # Load new module
-sudo insmod /lib/modules/$(uname -r)/extra/darling-mach.ko
+sudo insmod /lib/modules/"$(uname -r)"/extra/darling-mach.ko
 
 # Work around existing overlayfs
 sudo mount -t tmpfs tmpfs /home/darling

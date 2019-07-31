@@ -1,9 +1,5 @@
-FROM ubuntu:18.04
-
-# Create our group & user.
-RUN set -xe; \
-    groupadd -g 1000 darling; \
-    useradd -g darling -u 1000 -s /bin/sh -d /home/darling darling;
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE} as builder
 
 # Install deps.
 RUN set -xe; \
@@ -28,85 +24,119 @@ RUN set -xe; \
         libfreetype6-dev:i386 \
         libfuse-dev \
         libgl1-mesa-dev \
-        libssl-dev \
         libtiff5-dev \
         libudev-dev \
         libxml2-dev \
         linux-headers-generic \
         pkg-config \
         sudo \
-        vim \
-        wget \
         xz-utils; \
+    rm -rf /var/lib/apt/lists/*;
+
+# Clone Darling
+ARG DARLING_GIT_REF="master"
+RUN set -xe; \
+    mkdir -p /usr/local/src; \
+    git clone --recurse-submodules https://github.com/darlinghq/darling.git /usr/local/src/darling;
+
+WORKDIR /usr/local/src/darling
+
+# Checkout working gitref
+RUN set -xe; \
+    git checkout ${DARLING_GIT_REF}; \
+    git submodule update --recursive; \
+    mkdir -p /usr/local/src/darling/build;
+
+# Set our working directory to the build dir
+WORKDIR /usr/local/src/darling/build
+
+# Configure Darling Build
+RUN set -xe; \
+    cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/local ..;
+
+# Build Darling
+RUN set -xe; \
+    make -j$(getconf _NPROCESSORS_ONLN);
+
+# Install Darling    
+RUN set -xe; \
+    make install; \
+    cp /usr/local/src/darling/build/src/startup/rtsig.h /usr/local/src/darling/rtsig.h ;\
+    mkdir -p /usr/local/src/darling/build/src/startup; \
+    mv /usr/local/src/darling/rtsig.h /usr/local/src/darling/src/startup/rtsig.h;
+
+# Copy the modified CMakeLists.txt used for building LKM
+COPY build-assets /
+
+# Move LKM dependencies into single location
+RUN set -xe; \
+    cd /usr/local/src/; \
+    rm -rf darling/build; \
+    mv darling darling-full; \
+    mkdir -p darling/src; \
+    mkdir -p darling/build/src; \
+    mv /usr/local/src/docker-darling/CMakeLists.txt /usr/local/src/darling/CMakeLists.txt ;\
+    mv /usr/local/src/darling-full/src/lkm /usr/local/src/darling/src/lkm ;\
+    mv /usr/local/src/darling-full/cmake /usr/local/src/darling/cmake; \
+    mv /usr/local/src/darling-full/src/bootstrap_cmds /usr/local/src/darling/src/bootstrap_cmds; \
+    mv /usr/local/src/darling-full/platform-include /usr/local/src/darling/platform-include; \
+    mv /usr/local/src/darling-full/kernel-include /usr/local/src/darling/kernel-include; \
+    mv /usr/local/src/darling-full/src/CMakeLists.txt /usr/local/src/darling/src/CMakeLists.txt; \
+    mv /usr/local/src/darling-full/src/startup /usr/local/src/darling/build/src/startup; \
+    rm -rf /usr/local/src/darling-full; \
+    rm -rf /usr/local/src/docker-darling; \
+    cd /usr/local/src/darling/build; \
+    cmake ..;
+
+# Create final runtime image
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+
+# Create our group & user.
+RUN set -xe; \
+    groupadd -g 1000 darling; \
+    useradd -g darling -u 1000 -s /bin/sh -d /home/darling darling;
+
+# Install deps.
+RUN set -xe; \
+    dpkg --add-architecture i386; \
+    apt-get update; \
+    apt-get install -y \
+        bison \
+        clang \
+        cmake \
+        flex \
+        kmod \
+        make \
+        sudo; \
     rm -rf /var/lib/apt/lists/*;
 
 # Setup sudo access
 RUN set -xe; \
     echo "darling ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers;
 
-# Clone and build osxcross
-ARG OSXCROSS_GIT_REF="master"
-RUN set -xe; \
-    git clone https://github.com/tpoechtrager/osxcross.git; \
-    cd /osxcross; \
-    git checkout ${OSXCROSS_GIT_REF}; \
-    cd /osxcross/tarballs; \
-    wget "https://github.com/jamesbrink/osxcross-resources/raw/master/MacOSX10.11.sdk.tar.xz"; \
-    cd /osxcross; \
-    UNATTENDED="true" ./build.sh; \
-    UNATTENDED="true" PATH="/osxcross/target/bin:/usr/local/bin:$PATH" MACOSX_DEPLOYMENT_TARGET="10.11" /osxcross/target/bin/osxcross-macports install openssl qt5 db48 boost miniupnpc;
+# Copy our Darling build from previous stage
+COPY --from=builder /usr/local /usr/local
 
-# Build Darling
-ARG DARLING_GIT_REF="master"
-RUN set -xe; \
-    git clone --recurse-submodules https://github.com/darlinghq/darling.git /home/darling;
+# Copy the needed sources to build kernel module
+COPY --from=builder /usr/local/src/darling /usr/local/src/darling
 
-# We break this step up for local caching purposes
-RUN set -xe; \
-    echo "${DARLING_GIT_REF}" > /home/darling/version.txt; \
-    cd /home/darling; \
-    git checkout ${DARLING_GIT_REF}; \
-    git submodule update --recursive; \
-    mkdir -p /home/darling/build; \
-    cd /home/darling/build; \
-    cmake ..; \
-    make -j$(getconf _NPROCESSORS_ONLN); \
-    make install; \
-    cp /home/darling/build/src/startup/rtsig.h /home/darling/rtsig.h ;\
-    rm -rf /usr/src/linux-*; \
-    rm -rf /home/darling/build; \
-    mkdir -p /home/darling/build/src/startup; \
-    mv /home/darling/rtsig.h /home/darling/src/startup/rtsig.h; \
-    chown -R darling:darling /home/darling;
-
-# Download kernel-header scripts
-# TODO find a better solution for this
-RUN set -xe; \
-    ls ; \
-    apt-get update; \
-    apt-get install -y curl; \
-    cd /usr/local; \
-    git clone https://github.com/jamesbrink/kernel-headers.git; \
-    rm -rf /var/lib/apt/lists/*;
-
-# Build arguments.
+# Labels / Metadata.
 ARG VCS_REF
 ARG BUILD_DATE
 ARG VERSION
-
-# Labels / Metadata.
 LABEL \
     org.opencontainers.image.authors="James Brink <brink.james@gmail.com>" \
     org.opencontainers.image.created="${BUILD_DATE}" \
-    org.opencontainers.image.description="darling ($VERSION)" \
+    org.opencontainers.image.description="darling lite version (no kernel module) ($VERSION)" \
     org.opencontainers.image.revision="${VCS_REF}" \
     org.opencontainers.image.source="https://github.com/utensils/docker-darling.git" \
-    org.opencontainers.image.title="darling" \
+    org.opencontainers.image.title="darling (lite)" \
     org.opencontainers.image.vendor="Utensils" \
     org.opencontainers.image.version="git - ${DARLING_GIT_REF}"
 
 # Copy our entrypoint into the container.
-COPY ./runtime-assets /
+COPY ./runtime-assets/ /
 
 # Setup our environment variables.
 ENV PATH="/usr/local/bin:$PATH"
@@ -117,13 +147,8 @@ USER darling
 # Set our working directory.
 WORKDIR /home/darling
 
-# Setup our volume for bringing apps into container.
-VOLUME /mnt/apps
-
-# COPY Xcode.dmg /home/darling/Xcode.dmg
-
 # Set the entrypoint.
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # Set the default command
-CMD ["/bin/bash"]
+CMD ["/usr/local/bin/darling", "shell"]

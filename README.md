@@ -12,19 +12,21 @@ Darling actually uses it's own container system, so running with Docker is a bit
 
 ## Building
 
-This image is fairly heavy to build and can take a few hours depending on your system. The resulting image is about **10GB** uncompressed.
-The build is driven by a `Makefile` so simply run the following:
+This image is fairly heavy to build and can take a few hours depending on your system. The resulting image is about **1.5GB** uncompressed.
+The build is driven by a `Makefile` so simply run the following:  
+
 ```shell
 make
 ```
 
-If you look at the Makefile you will see a variable for `DARLING_GIT_REF` which is used to build the image against a known working git ref since there seems to be no versioning or tagging going on with Darling. This variable is nothing more than a build arg passed to docker so you can build the most recent commit:
+If you look at the Makefile you will see a variable for `DARLING_GIT_REF` which is used to build the image against a known working git ref since there seems to be no versioning or tagging going on with Darling. This variable is nothing more than a build arg passed to docker so you can build the most recent commit:  
+
 ```shell
 DARLING_GIT_REF=master make
 ```
 or you can build from a specific commit:
 ```shell
-DARLING_GIT_REF=ab56f3209d75ad67a140e1f3e6baccfdca7a1c78 make
+DARLING_GIT_REF=a00051b580c45b002690422819e9e2ce486f257e make
 ```
 
 ## Usage
@@ -34,51 +36,20 @@ kernel module against the running system on container startup. We run the contai
 
 We use a volume mount of your host systems kernel sources (read only) so the kernel module can be built on container startup, this is just an attempt to keep the image somewhat portable.
 
-For Arch Linux Hosts run:
+For Arch Linux Hosts run:  
+
 ```shell
 docker run -i -t \
-    -v /lib/modules/$(uname -r)/build:/lib/modules/$(uname -r)/build:ro \
+    -v /lib/modules/"$(uname -r)"/build:/lib/modules/"$(uname -r)"/build:ro \
     --privileged utensils/darling darling shell
 ```
 
-For Ubuntu/Debian Hosts run: 
+For Ubuntu/Debian Hosts run:  
+
 ```shell
 docker run -i -t \
     -v /usr/src:/usr/src:ro \
     --privileged utensils/darling darling shell
-```
-
-### Lite version
-
-I have added a newer much more light weight docker image called `utensils/darling:lite`. 
-This image will likely replace the existing bloated image in the near future. 
-**This image will require you to already have the Darling kernel on your host.**
-
-ArchLinux users can install the AUR package `darling-mach-dkms`:
-```shell
-yay -S darling-mach-dkms
-sudo modprobe darling-mach
-```
-
-For other distributions make sure you have the build deps listed here [DarlingHQ](https://wiki.darlinghq.org/build_instructions)
-
-Then you can build just the kernel module like so:
-```shell
-git clone --recursive https://github.com/darlinghq/darling.git
-cd darling
-git checkout 4b120631eaebdadf7b77a4bf5c4eeecfe2ea594b
-git submodule update
-mkdir -p build
-cd build
-cmake ..
-make rtsig_h
-make lkm -j$(getconf _NPROCESSORS_ONLN)
-sudo make lkm_install
-```
-
-The container can then be run like so:
-```shell
-docker run -i -t --rm --privileged utensils/darling:lite
 ```
 
 ## License
