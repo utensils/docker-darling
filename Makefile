@@ -15,9 +15,9 @@ BUILD_DATE              := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 .PHONY: default
 default: build
 
-# Build the docker image
-.PHONY: build
-build:
+# Build the builder image for cache purposes
+.PHONY: builder
+builder:
 	docker build \
 		--build-arg BASE_IMAGE=$(BASE_IMAGE) \
 		--build-arg BUILD_DATE=$(BUILD_DATE) \
@@ -28,6 +28,10 @@ build:
 		--target builder \
 		--cache-from $(REPO_NAMESPACE)/$(IMAGE_NAME):builder \
 		--file Dockerfile .
+
+# Build the runtime docker image
+.PHONY: build
+build:
 	docker build \
 		--build-arg BASE_IMAGE=$(BASE_IMAGE) \
 		--build-arg BUILD_DATE=$(BUILD_DATE) \
@@ -37,7 +41,7 @@ build:
 		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME):latest \
 		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME):$(VCS_REF) \
 		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME):$(VERSION) \
-		--cache-from $(REPO_NAMESPACE)/$(IMAGE_NAME):latest \
+		--cache-from $(REPO_NAMESPACE)/$(IMAGE_NAME):builder \
 		--file Dockerfile .
 
 # List built images
@@ -56,7 +60,12 @@ push:
 	echo "$$REPO_PASSWORD" | docker login -u "$(REPO_USERNAME)" --password-stdin; \
 		docker push  $(REPO_NAMESPACE)/$(IMAGE_NAME):latest; \
 		docker push  $(REPO_NAMESPACE)/$(IMAGE_NAME):$(VCS_REF); \
-		docker push  $(REPO_NAMESPACE)/$(IMAGE_NAME):$(VERSION); \
+		docker push  $(REPO_NAMESPACE)/$(IMAGE_NAME):$(VERSION);
+
+# Push builder image for cache purposes
+.PHONY: push-builder
+push-builder:
+	echo "$$REPO_PASSWORD" | docker login -u "$(REPO_USERNAME)" --password-stdin; \
 		docker push  $(REPO_NAMESPACE)/$(IMAGE_NAME):builder;
 
 # Update README on registry

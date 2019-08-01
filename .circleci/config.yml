@@ -21,15 +21,20 @@ jobs:
             docker pull utensils/darling:builder || exit 0
             docker pull utensils/darling:latest || exit 0
       - run:
-          name: Build images
+          name: Make And Push Build image for cache re-use
           command: |
-            make 
+            make builder
+            make push-builder
+      - run:
+          name: Make Runtime Image
+          command: |
+            make
       - run:
           name: List Docker Images
           command: |
             make list
       - run:
-          name: Push Docker Images
+          name: Push Docker Runtime Image
           command: |
             make push
             make push-readme
