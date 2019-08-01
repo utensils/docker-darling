@@ -18,8 +18,8 @@ jobs:
       - run:
           name: Pull cache images
           command: |
-            docker pull utensils/darling:builder
-            docker pull utensils/darling:latest 
+            docker pull utensils/darling:builder || exit 0
+            docker pull utensils/darling:latest || exit 0
       - run:
           name: Build images
           command: |
