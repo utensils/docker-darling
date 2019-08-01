@@ -24,9 +24,9 @@ build:
 		--build-arg DARLING_GIT_REF=$(DARLING_GIT_REF) \
 		--build-arg VCS_REF=$(VCS_REF) \
 		--build-arg VERSION=$(VERSION) \
-		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME)-builder:latest \
+		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME):builder \
 		--target builder \
-		--cache-from $(REPO_NAMESPACE)/$(IMAGE_NAME)-builder:latest \
+		--cache-from $(REPO_NAMESPACE)/$(IMAGE_NAME):builder \
 		--file Dockerfile .
 	docker build \
 		--build-arg BASE_IMAGE=$(BASE_IMAGE) \
@@ -44,7 +44,6 @@ build:
 .PHONY: list
 list:
 	docker images $(REPO_NAMESPACE)/$(IMAGE_NAME) --filter "dangling=false"
-	docker images $(REPO_NAMESPACE)/$(IMAGE_NAME)-builder --filter "dangling=false"
 
 # Run any tests
 .PHONY: test
@@ -58,7 +57,7 @@ push:
 		docker push  $(REPO_NAMESPACE)/$(IMAGE_NAME):latest; \
 		docker push  $(REPO_NAMESPACE)/$(IMAGE_NAME):$(VCS_REF); \
 		docker push  $(REPO_NAMESPACE)/$(IMAGE_NAME):$(VERSION); \
-		docker push  $(REPO_NAMESPACE)/$(IMAGE_NAME)-builder:latest;
+		docker push  $(REPO_NAMESPACE)/$(IMAGE_NAME):builder;
 
 # Update README on registry
 .PHONY: push-readme
@@ -83,4 +82,3 @@ update-micro-badge:
 .PHONY: clean
 clean:
 	docker rmi $$(docker images $(REPO_NAMESPACE)/$(IMAGE_NAME) --format="{{.Repository}}:{{.Tag}}") --force
-	docker rmi $$(docker images $(REPO_NAMESPACE)/$(IMAGE_NAME)-builder --format="{{.Repository}}:{{.Tag}}") --force
