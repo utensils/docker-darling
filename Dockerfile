@@ -122,13 +122,14 @@ COPY --from=builder /usr/local /usr/local
 COPY --from=builder /usr/local/src/darling /usr/local/src/darling
 
 # Labels / Metadata.
-ARG VCS_REF
 ARG BUILD_DATE
+ARG DARLING_GIT_REF
+ARG VCS_REF
 ARG VERSION
 LABEL \
     org.opencontainers.image.authors="James Brink <brink.james@gmail.com>" \
     org.opencontainers.image.created="${BUILD_DATE}" \
-    org.opencontainers.image.description="darling lite version (no kernel module) ($VERSION)" \
+    org.opencontainers.image.description="Darling ($VERSION)" \
     org.opencontainers.image.revision="${VCS_REF}" \
     org.opencontainers.image.source="https://github.com/utensils/docker-darling.git" \
     org.opencontainers.image.title="darling (lite)" \
