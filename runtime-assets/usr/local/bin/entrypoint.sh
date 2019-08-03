@@ -29,5 +29,7 @@ if [ $# -eq 0 ]; then
 	echo "No command was given to run, exiting."
 	exit 1
 else
+	# Ensure we don't get left in wrong directory after module build
+	cd /home/darling || exit 1
 	exec "$@"
 fi
