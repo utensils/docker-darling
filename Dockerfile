@@ -63,7 +63,8 @@ RUN set -xe; \
     make install; \
     cp /usr/local/src/darling/build/src/startup/rtsig.h /usr/local/src/darling/rtsig.h ;\
     mkdir -p /usr/local/src/darling/build/src/startup; \
-    mv /usr/local/src/darling/rtsig.h /usr/local/src/darling/src/startup/rtsig.h;
+    mv /usr/local/src/darling/rtsig.h /usr/local/src/darling/src/startup/rtsig.h; \
+    chmod 4755 /usr/local/bin/darling;
 
 # Copy the modified CMakeLists.txt used for building LKM
 COPY build-assets /
