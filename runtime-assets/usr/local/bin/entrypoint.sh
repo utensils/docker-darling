@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# setuid root on darling binary
+sudo chmod 4755 /usr/local/bin/darling
+
 # Setup kernel module paths
 sudo mkdir -p /lib/modules/"$(uname -r)"
 sudo ln -s /usr/src/linux-headers-"$(uname -r)" /lib/modules/"$(uname -r)"/build
