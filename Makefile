@@ -42,6 +42,7 @@ build:
 		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME):$(VCS_REF) \
 		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME):$(VERSION) \
 		--cache-from $(REPO_NAMESPACE)/$(IMAGE_NAME):builder \
+		--cache-from $(REPO_NAMESPACE)/$(IMAGE_NAME):latest \
 		--file Dockerfile .
 
 # List built images

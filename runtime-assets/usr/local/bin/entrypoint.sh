@@ -2,7 +2,7 @@
 
 # Setup kernel module paths
 sudo mkdir -p /lib/modules/"$(uname -r)"
-# sudo ln -s /usr/usr/local/src/linux-headers-"$(uname -r)" /lib/modules/"$(uname -r)"/build
+sudo ln -s /usr/src/linux-headers-"$(uname -r)" /lib/modules/"$(uname -r)"/build
 
 # Build kernel module
 cd /usr/local/src/darling/build || exit 1

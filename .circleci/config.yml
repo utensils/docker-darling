@@ -19,6 +19,7 @@ jobs:
           name: Pull cache images
           command: |
             docker pull utensils/darling:builder || exit 0
+            docker pull utensils/darling:latest || exit 0
       - run:
           name: Make And Push Build image for cache re-use
           command: |

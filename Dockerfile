@@ -88,6 +88,9 @@ RUN set -xe; \
     cd /usr/local/src/darling/build; \
     cmake ..;
 
+# Copy our runtime assets
+COPY ./runtime-assets/ /
+
 # Create final runtime image
 ARG BASE_IMAGE
 FROM ${BASE_IMAGE}
@@ -95,10 +98,8 @@ FROM ${BASE_IMAGE}
 # Create our group & user.
 RUN set -xe; \
     groupadd -g 1000 darling; \
-    useradd -g darling -u 1000 -s /bin/sh -d /home/darling darling;
-
-# Install deps.
-RUN set -xe; \
+    useradd -g darling -u 1000 -s /bin/sh -d /home/darling darling; \
+    # Install deps. \
     dpkg --add-architecture i386; \
     apt-get update; \
     apt-get install -y \
@@ -109,17 +110,12 @@ RUN set -xe; \
         kmod \
         make \
         sudo; \
-    rm -rf /var/lib/apt/lists/*;
-
-# Setup sudo access
-RUN set -xe; \
+    rm -rf /var/lib/apt/lists/*; \
+    # Setup sudo access \
     echo "darling ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers;
 
 # Copy our Darling build from previous stage
 COPY --from=builder /usr/local /usr/local
-
-# Copy the needed sources to build kernel module
-COPY --from=builder /usr/local/src/darling /usr/local/src/darling
 
 # Labels / Metadata.
 ARG BUILD_DATE
@@ -135,9 +131,6 @@ LABEL \
     org.opencontainers.image.title="darling (lite)" \
     org.opencontainers.image.vendor="Utensils" \
     org.opencontainers.image.version="git - ${DARLING_GIT_REF}"
-
-# Copy our entrypoint into the container.
-COPY ./runtime-assets/ /
 
 # Setup our environment variables.
 ENV PATH="/usr/local/bin:$PATH"
