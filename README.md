@@ -36,7 +36,7 @@ kernel module against the running system on container startup. We run the contai
 
 We use a volume mount of your host systems kernel sources (read only) so the kernel module can be built on container startup, this is just an attempt to keep the image somewhat portable.
 
-For Arch Linux Hosts run:  
+For Manjaro/Arch Linux Hosts run:  
 
 ```shell
 docker run -i -t \
